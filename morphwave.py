@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy import signal
+from scipy.signal import resample
 from scipy.signal import stft, istft, gaussian, convolve
 from scipy.ndimage import gaussian_filter
 from scipy.signal import resample_poly
@@ -29,6 +30,10 @@ def apply_window(data, window_type):
 def find_peak(signal):
     return np.argmax(np.abs(signal))
 
+def resample_sinc(signal, new_len):
+    return signal.resample(signal, new_len, window='kaiser', num=None)
+
+
 def wavelet_morph(wave1, wave2, alpha, wavelet_type, freq_ratio, window_type, beta=None):
     coeffs1 = pywt.wavedec(wave1, wavelet_type)
     coeffs2 = pywt.wavedec(wave2, wavelet_type)
@@ -43,13 +48,13 @@ def wavelet_morph(wave1, wave2, alpha, wavelet_type, freq_ratio, window_type, be
             c1_windowed = apply_window_around_peak(c1, window_type, beta)
             c2_windowed = apply_window_around_peak(c2, window_type, beta)
 
-            c1_resampled = resample_poly(c1_windowed, new_len, c1_len)
-            c2_resampled = resample_poly(c2_windowed, new_len, c2_len)
+            c1_resampled = resample(c1_windowed, new_len)
+            c2_resampled = resample(c2_windowed, new_len)
 
-            c1_padded = np.pad(c1_resampled, (0, max(0, c2_len - new_len)), mode='constant', constant_values=0)
-            c2_padded = np.pad(c2_resampled, (0, max(0, c1_len - new_len)), mode='constant', constant_values=0)
+            c1_resampled = resample(c1_resampled, c1_len)  # Restore original length
+            c2_resampled = resample(c2_resampled, c2_len)  # Restore original length
 
-            morphed_c = alpha * c1_padded + (1 - alpha) * c2_padded
+            morphed_c = alpha * c1_resampled + (1 - alpha) * c2_resampled
         else:
             morphed_c = alpha * c1 + (1 - alpha) * c2
 
@@ -76,18 +81,20 @@ def apply_window_around_peak(signal, window_type, beta=None, peak_ratio=0.1):
     elif window_type == 'kaiser':
         if beta is None:
             raise ValueError('beta parameter must be provided for kaiser window')
-        window = kaiser(window_len, beta)
+        window = np.kaiser(window_len, beta)
     elif window_type == 'cos3':
         window = np.cos(np.linspace(0, np.pi, window_len))**3
     else:
         raise ValueError(f'Unsupported window type: {window_type}')
 
+    # Resize window to match signal[start_index:end_index] shape
     window_resized = window[:end_index - start_index]
 
     windowed_signal = np.copy(signal)
     windowed_signal[start_index:end_index] = signal[start_index:end_index] * window_resized
 
     return windowed_signal
+
 
 def read_waveform(filename):
     _, data = wavfile.read(filename)
@@ -112,8 +119,10 @@ def parse_arguments():
     parser.add_argument('--plot', nargs='?', const=-1, type=float, default=None, help='Plot waveforms and spectrograms. Specify the horizontal width in milliseconds (default: the length of the longer input waveform)')
     parser.add_argument('--wavelet', type=str, default='db4', help='Wavelet type: haar, dbN, symN, coifN, or biorNr.Nd (default: db4)')
     parser.add_argument('--freq', type=float, default=1.0, help='Frequency morphing ratio (0.0 <= freq <= 1.0)')
-    parser.add_argument('--window', type=str, default='hamming', help='Window function to apply (hamming, hann, blackman, kaiser, cos3)')
+    parser.add_argument('--window', type=str, default='hann', help='Window type for resampling (hann, hamming, blackman, kaiser, cos3).')
+    parser.add_argument('--beta', type=float, default=None, help='Beta value for the Kaiser window.')
     parser.add_argument('--fft_size', type=int, default=2048, help='Size of the FFT window')
+    parser.add_argument('--resample', '-r', type=str, choices=['poly', 'sinc'], default='poly', help='Resampling method to be used (poly or sinc).')
     return parser.parse_args()
 
 def normalize_waveform(waveform, target_dBFS):
@@ -172,8 +181,8 @@ def main():
         wave2_left = np.pad(wave2_left, (0, max_length_left - wave2_left.shape[0]), 'constant')
         wave2_right = np.pad(wave2_right, (0, max_length_right - wave2_right.shape[0]), 'constant')
 
-    morphed_wave_left = wavelet_morph(wave1_left, wave2_left, args.alpha, args.wavelet, args.freq, args.window)
-    morphed_wave_right = wavelet_morph(wave1_right, wave2_right, args.alpha, args.wavelet, args.freq, args.window)
+    morphed_wave_left = wavelet_morph(wave1_left, wave2_left, args.alpha, args.wavelet, args.freq, args.window, beta=args.beta)
+    morphed_wave_right = wavelet_morph(wave1_right, wave2_right, args.alpha, args.wavelet, args.freq, args.window, beta=args.beta)
 
     if 0 < args.blur <= 50.0:
         wave1_left = apply_gaussian_blur(wave1_left, sr1, args.blur)
