@@ -34,7 +34,8 @@ def resample_sinc(signal, new_len):
     return signal.resample(signal, new_len, window='kaiser', num=None)
 
 
-def wavelet_morph(wave1, wave2, alpha, wavelet_type, freq_ratio, window_type, beta=None):
+
+def wavelet_morph(wave1, wave2, alpha, wavelet_type, freq_ratio, window_type, resample_method='poly', beta=None):
     coeffs1 = pywt.wavedec(wave1, wavelet_type)
     coeffs2 = pywt.wavedec(wave2, wavelet_type)
 
@@ -45,16 +46,26 @@ def wavelet_morph(wave1, wave2, alpha, wavelet_type, freq_ratio, window_type, be
             c2_len = len(c2)
             new_len = int(c1_len * freq_ratio)
 
-            c1_windowed = apply_window_around_peak(c1, window_type, beta)
-            c2_windowed = apply_window_around_peak(c2, window_type, beta)
+            c1_windowed = apply_window_around_peak(c1, window_type, beta=beta)
+            c2_windowed = apply_window_around_peak(c2, window_type, beta=beta)
 
-            c1_resampled = resample(c1_windowed, new_len)
-            c2_resampled = resample(c2_windowed, new_len)
+            if resample_method == 'poly':
+                c1_resampled = resample_poly(c1_windowed, new_len, c1_len)
+                c2_resampled = resample_poly(c2_windowed, new_len, c2_len)
+            elif resample_method == 'sinc':
+                c1_resampled = resample_sinc(c1_windowed, new_len)
+                c2_resampled = resample_sinc(c2_windowed, new_len)
+            else:
+                raise ValueError(f'Unsupported resample method: {resample_method}')
 
-            c1_resampled = resample(c1_resampled, c1_len) 
-            c2_resampled = resample(c2_resampled, c2_len) 
+            # Apply window function to resampled signals
+            c1_windowed_resampled = apply_window_around_peak(c1_resampled, window_type, beta=beta)
+            c2_windowed_resampled = apply_window_around_peak(c2_resampled, window_type, beta=beta)
 
-            morphed_c = alpha * c1_resampled + (1 - alpha) * c2_resampled
+            c1_padded = np.pad(c1_windowed_resampled, (0, max(0, c2_len - new_len)), mode='constant', constant_values=0)
+            c2_padded = np.pad(c2_windowed_resampled, (0, max(0, c1_len - new_len)), mode='constant', constant_values=0)
+
+            morphed_c = alpha * c1_padded + (1 - alpha) * c2_padded
         else:
             morphed_c = alpha * c1 + (1 - alpha) * c2
 
@@ -63,6 +74,7 @@ def wavelet_morph(wave1, wave2, alpha, wavelet_type, freq_ratio, window_type, be
     morphed_wave = pywt.waverec(morphed_coeffs, wavelet_type)
 
     return morphed_wave
+
 
 def apply_window_around_peak(signal, window_type, beta=None, peak_ratio=0.1):
     signal_len = len(signal)
@@ -87,7 +99,6 @@ def apply_window_around_peak(signal, window_type, beta=None, peak_ratio=0.1):
     else:
         raise ValueError(f'Unsupported window type: {window_type}')
 
-    # Resize window to match signal[start_index:end_index] shape
     window_resized = window[:end_index - start_index]
 
     windowed_signal = np.copy(signal)
