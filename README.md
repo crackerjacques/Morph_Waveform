@@ -29,6 +29,8 @@ ___With blur, time streach and frequency morph FFT without plotting.___
 python morphwave.py sound01.wav sound02.wav -s -a 0.5 -n -6 -b 10 --fft_size 2048 --window blackman --wavelet coif4 --freq 0.75 --dc -o morped02.wav
 ```
 
+
+```
   -a alpha mix ratio
   -o output filename.wav
   -b blur bluring waveform
@@ -40,6 +42,7 @@ python morphwave.py sound01.wav sound02.wav -s -a 0.5 -n -6 -b 10 --fft_size 204
   --window window function hamming, hann, blackman, kaiser, cos3
   --fft_size fft window size
   --wavelet haar, dbN, symN, coifN, or biorNr.Nd
+ ```
  
 # Usage
 
