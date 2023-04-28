@@ -1,5 +1,5 @@
 # Morph_Waveform
-Morph 2 wave file with wavelet.
+Morph 2 wave file by wavelet.
 ![IMG](https://github.com/crackerjacques/Morph_Waveform/blob/main/images/moprh.png?raw=true)
 
 # Requirements
