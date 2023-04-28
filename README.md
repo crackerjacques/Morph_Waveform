@@ -12,7 +12,8 @@ Python as librosa enabled version.
 ```
 
 When you got pip error, please use python 3.9 in conda or pyenv.
-Command and Option
+
+# Command and Option
 
 ___Example___
 
@@ -40,7 +41,7 @@ python morphwave.py sound01.wav sound02.wav -s -a 0.5 -n -6 -b 10 --fft_size 204
   --fft_size fft window size
   --wavelet haar, dbN, symN, coifN, or biorNr.Nd
  
-Usage
+# Usage
 
 I expected this to morph the impulse response and create two intermediate files. Generally successful, but it might also be useful for creating waveforms for a wavetable synthesizer. Therefore, the output file is fixed to stereo, but if you want to operate it as monaural, please use sox's remix command to output as monaural.
 
