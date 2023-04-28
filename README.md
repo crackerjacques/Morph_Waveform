@@ -1,5 +1,6 @@
 # Morph_Waveform
 Morph 2 wave file with wavelet.
+![IMG](https://github.com/crackerjacques/Morph_Waveform/blob/main/images/moprh.png?raw=true)
 
 # Requirements
 
@@ -13,13 +14,19 @@ Python as librosa enabled version.
 When you got pip error, please use python 3.9 in conda or pyenv.
 Command and Option
 
-Example
+___Example___
 
+```
 python morphwave.py sound01.wav sound02.wav -a 0.6 -n -6 --plot -o morped.wav
+```
 
-With blur, time streach and frequency morph FFT without plotting.
 
+
+___With blur, time streach and frequency morph FFT without plotting.___
+
+```
 python morphwave.py sound01.wav sound02.wav -s -a 0.5 -n -6 -b 10 --fft_size 2048 --window blackman --wavelet coif4 --freq 0.75 --dc -o morped02.wav
+```
 
   -a alpha mix ratio
   -o output filename.wav
@@ -36,3 +43,12 @@ python morphwave.py sound01.wav sound02.wav -s -a 0.5 -n -6 -b 10 --fft_size 204
 Usage
 
 I expected this to morph the impulse response and create two intermediate files. Generally successful, but it might also be useful for creating waveforms for a wavetable synthesizer. Therefore, the output file is fixed to stereo, but if you want to operate it as monaural, please use sox's remix command to output as monaural.
+
+
+
+Bluring sample::
+![IMG](https://github.com/crackerjacques/Morph_Waveform/blob/main/images/blur.png?raw=true)
+
+IR+IR
+![IMG](https://github.com/crackerjacques/Morph_Waveform/blob/main/images/IR.png?raw=true)
+
