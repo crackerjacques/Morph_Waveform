@@ -51,8 +51,8 @@ def wavelet_morph(wave1, wave2, alpha, wavelet_type, freq_ratio, window_type, be
             c1_resampled = resample(c1_windowed, new_len)
             c2_resampled = resample(c2_windowed, new_len)
 
-            c1_resampled = resample(c1_resampled, c1_len)  # Restore original length
-            c2_resampled = resample(c2_resampled, c2_len)  # Restore original length
+            c1_resampled = resample(c1_resampled, c1_len) 
+            c2_resampled = resample(c2_resampled, c2_len) 
 
             morphed_c = alpha * c1_resampled + (1 - alpha) * c2_resampled
         else:
