@@ -49,6 +49,6 @@ I expected this to morph the impulse response and create two intermediate files.
 Bluring sample::
 ![IMG](https://github.com/crackerjacques/Morph_Waveform/blob/main/images/blur.png?raw=true)
 
-IR+IR
+IR+IR /w Freq FFT configured.
 ![IMG](https://github.com/crackerjacques/Morph_Waveform/blob/main/images/IR.png?raw=true)
 
