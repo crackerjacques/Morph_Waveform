@@ -36,10 +36,12 @@ python morphwave.py sound01.wav sound02.wav -s -a 0.5 -n -6 -b 10 --fft_size 204
   -b blur bluring waveform
   -n normalize dBFS
   --dc dc offset filtre
+  -r resampling method sinc or poly
   -s streach shorter file to align longer file
   --plot plot spectrogram and waveform
   --freq frequency morphing 0.0 to 1.0
   --window window function hamming, hann, blackman, kaiser, cos3
+  --beta when you use kaiser window please put number of beta 
   --fft_size fft window size
   --wavelet haar, dbN, symN, coifN, or biorNr.Nd
  ```
